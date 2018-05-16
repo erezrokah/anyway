@@ -1,5 +1,11 @@
 var INACCURATE_MARKER_OPACITY = 0.5;
 
+var templates = {
+    united: $("#united-marker-content-template").html(),
+    rsa: $("#rsa-marker-content-template").html(),
+    default: $("#marker-content-template").html()
+};
+
 var MarkerView = Backbone.View.extend({
     events : {
         "click .delete-button" : "clickDelete",
@@ -10,19 +16,16 @@ var MarkerView = Backbone.View.extend({
         this.markerIconType = options.markerIconType;
         _.bindAll(this, "clickMarker");
     },
-    localize : function(field,value) {
+    localize : function(field,value,el) {
         //localizes non-mandatory data (which has the same consistent html and python field names)
         if (this.model.has(value) && this.model.get(value)!="" &&
             localization[field][this.model.get(value)]!=undefined) {
-            this.$el.find("." + value).text(fields[field] + ": " + localization[field][this.model.get(value)]);
+            el.find("." + value).text(fields[field] + ": " + localization[field][this.model.get(value)]);
         }
     },
-
     render : function() {
-
         var markerPosition = new google.maps.LatLng(this.model.get("latitude"),
-            this.model.get("longitude"));
-        var provider = PROVIDERS[this.model.get("provider_code")];
+        this.model.get("longitude"));
 
         this.marker = new google.maps.Marker({
             position: markerPosition,
@@ -49,82 +52,94 @@ var MarkerView = Backbone.View.extend({
 
         this.marker.setTitle(this.getTitle('single'));
 
-        if (this.model.get("provider_code") == UNITED_HATZALA_CODE) {
-            app.oms.addMarker(this.marker);
-            this.$el.html($("#united-marker-content-template").html());
-
-            this.$el.find(".title").text(this.marker.get("title"));
-            this.$el.find(".content").text("תיאור אירוע: " + this.marker.get("title"));
-            this.$el.find(".creation-date").text("תאריך: " + moment(this.model.get("created")).format("LLLL"));
-            this.$el.find(".address").text("מיקום: " + this.model.get("address"));
-            this.localize("MEZEG_AVIR_UNITED","weather");
-            if (this.model.get("description") != "") {
-                this.$el.find(".comments").text("הערות: " + this.model.get("description"));
-            }
-            this.$el.find(".profile-image").attr("width", "70px");
-            this.$el.find(".profile-image").attr("src", "/static/img/logos/" + provider.logo);
-            this.$el.find(".profile-image").attr("title", provider.name);
-            this.$el.find(".profile-image-url").attr("href", provider.url);
-            this.$el.find(".added-by").html("מקור: <a href='" +
-                                            provider.url + "' target='blank'>" + provider.name + "</a>");
-        } else if (this.model.get("provider_code") == RSA_PROVIDER_CODE) {
-            this.$el.html($("#rsa-marker-content-template").html());
-
-            this.$el.find(".title").text(this.marker.get("title"));
-            this.$el.find(".description").text(this.model.get("description"));
-            this.$el.find(".profile-image").attr("width", "70px");
-            this.$el.find(".profile-image").attr("src", "/static/img/logos/" + provider.logo);
-            this.$el.find(".profile-image").attr("title", provider.name);
-            this.$el.find(".profile-image-url").attr("href", provider.url);
-            this.$el.find(".added-by").html("מקור: <a href='" +
-                                            provider.url + "' target='blank'>" + provider.name + "</a>");
-        }else{
-            this.$el.html($("#marker-content-template").html());
-
-            this.$el.find(".title").text(this.marker.get("title"));
-            this.$el.find(".id").text(fields.ACC_ID + ": " + this.marker.get("id"));
-            this.$el.find(".provider_code").text(fields.PROVIDER_CODE + ": " + this.model.get("provider_code"));
-            this.$el.find(".roadType").text(fields.SUG_DEREH + ": " + localization.SUG_DEREH[this.model.get("roadType")]);
-            this.$el.find(".accidentType").text(fields.SUG_TEUNA+ ": " + localization.SUG_TEUNA[this.model.get("subtype")]);
-            this.$el.find(".roadShape").text(fields.ZURAT_DEREH+ ": " + localization.ZURAT_DEREH[this.model.get("roadShape")]);
-            this.$el.find(".severityText").text(fields.HUMRAT_TEUNA + ": " + localization.HUMRAT_TEUNA[this.model.get("severity")]);
-            this.$el.find(".dayType").text(fields.SUG_YOM + ": " + localization.SUG_YOM[this.model.get("dayType")]);
-            this.$el.find(".igun").text(fields.STATUS_IGUN + ": " + localization.STATUS_IGUN[this.model.get("locationAccuracy")]);
-            this.$el.find(".unit").text(fields.YEHIDA + ": " + localization.YEHIDA[this.model.get("unit")]);
-            this.$el.find(".mainStreet").text(this.model.get("mainStreet"));
-            this.$el.find(".secondaryStreet").text(this.model.get("secondaryStreet"));
-            this.$el.find(".junction").text(this.model.get("junction"));
-            // Non-mandatory fields:
-            this.localize("HAD_MASLUL","one_lane");
-            this.localize("RAV_MASLUL","multi_lane");
-            this.localize("MEHIRUT_MUTERET","speed_limit");
-            this.localize("TKINUT","intactness");
-            this.localize("ROHAV","road_width");
-            this.localize("SIMUN_TIMRUR","road_sign");
-            this.localize("TEURA","road_light");
-            this.localize("BAKARA","road_control");
-            this.localize("MEZEG_AVIR","weather");
-            this.localize("PNE_KVISH","road_surface");
-            this.localize("SUG_EZEM","road_object");
-            this.localize("MERHAK_EZEM","object_distance");
-            this.localize("LO_HAZA","didnt_cross");
-            this.localize("OFEN_HAZIYA","cross_mode");
-            this.localize("MEKOM_HAZIYA","cross_location");
-            this.localize("KIVUN_HAZIYA","cross_direction");
-
-            this.$el.find(".creation-date").text("תאריך: " +
-                moment(this.model.get("created")).format("LLLL"));
-            this.$el.find(".profile-image").attr("width", "50px");
-            this.$el.find(".profile-image").attr("src", "/static/img/logos/" + provider.logo);
-            this.$el.find(".profile-image").attr("title", provider.name);
-            this.$el.find(".profile-image-url").attr("href", provider.url);
-            this.$el.find(".added-by").html("מקור: <a href='" +
-                provider.url + "' target='blank'>" + provider.name + "</a>");
-        }
-
         app.oms.addMarker(this.marker);
 
         return this;
+    },
+    populateMarkerInfo : function() {
+        var provider = PROVIDERS[this.model.get("provider_code")];
+        if (this.model.get("provider_code") == UNITED_HATZALA_CODE) {
+            var temp = $("<div/>");
+            temp.html(templates.rsa);
+
+            temp.find(".title").text(this.marker.get("title"));
+            temp.find(".content").text("תיאור אירוע: " + this.marker.get("title"));
+            temp.find(".creation-date").text("תאריך: " + moment(this.model.get("created")).format("LLLL"));
+            temp.find(".address").text("מיקום: " + this.model.get("address"));
+            this.localize("MEZEG_AVIR_UNITED","weather",temp);
+            if (this.model.get("description") != "") {
+                temp.find(".comments").text("הערות: " + this.model.get("description"));
+            }
+            temp.find(".profile-image").attr("width", "70px");
+            temp.find(".profile-image").attr("src", "/static/img/logos/" + provider.logo);
+            temp.find(".profile-image").attr("title", provider.name);
+            temp.find(".profile-image-url").attr("href", provider.url);
+            temp.find(".added-by").html("מקור: <a href='" +
+                                            provider.url + "' target='blank'>" + provider.name + "</a>");
+
+            this.$el.html(temp.html());
+        } else if (this.model.get("provider_code") == RSA_PROVIDER_CODE) {
+            var temp = $("<div/>");
+            temp.html(templates.rsa);
+
+            temp.find(".title").text(this.marker.get("title"));
+            temp.find(".description").text(this.model.get("description"));
+            temp.find(".profile-image").attr("width", "70px");
+            temp.find(".profile-image").attr("src", "/static/img/logos/" + provider.logo);
+            temp.find(".profile-image").attr("title", provider.name);
+            temp.find(".profile-image-url").attr("href", provider.url);
+            temp.find(".added-by").html("מקור: <a href='" +
+                                            provider.url + "' target='blank'>" + provider.name + "</a>");
+
+            this.$el.html(temp.html());
+
+        } else {
+            var temp = $("<div/>");
+            temp.html(templates.default);
+            
+            temp.find(".title").text(this.marker.get("title"));
+            temp.find(".id").text(fields.ACC_ID + ": " + this.marker.get("id"));
+            temp.find(".provider_code").text(fields.PROVIDER_CODE + ": " + this.model.get("provider_code"));
+            temp.find(".roadType").text(fields.SUG_DEREH + ": " + localization.SUG_DEREH[this.model.get("roadType")]);
+            temp.find(".accidentType").text(fields.SUG_TEUNA+ ": " + localization.SUG_TEUNA[this.model.get("subtype")]);
+            temp.find(".roadShape").text(fields.ZURAT_DEREH+ ": " + localization.ZURAT_DEREH[this.model.get("roadShape")]);
+            temp.find(".severityText").text(fields.HUMRAT_TEUNA + ": " + localization.HUMRAT_TEUNA[this.model.get("severity")]);
+            temp.find(".dayType").text(fields.SUG_YOM + ": " + localization.SUG_YOM[this.model.get("dayType")]);
+            temp.find(".igun").text(fields.STATUS_IGUN + ": " + localization.STATUS_IGUN[this.model.get("locationAccuracy")]);
+            temp.find(".unit").text(fields.YEHIDA + ": " + localization.YEHIDA[this.model.get("unit")]);
+            temp.find(".mainStreet").text(this.model.get("mainStreet"));
+            temp.find(".secondaryStreet").text(this.model.get("secondaryStreet"));
+            temp.find(".junction").text(this.model.get("junction"));
+
+            // Non-mandatory fields:
+            this.localize("HAD_MASLUL","one_lane",temp);
+            this.localize("RAV_MASLUL","multi_lane",temp);
+            this.localize("MEHIRUT_MUTERET","speed_limit",temp);
+            this.localize("TKINUT","intactness",temp);
+            this.localize("ROHAV","road_width",temp);
+            this.localize("SIMUN_TIMRUR","road_sign",temp);
+            this.localize("TEURA","road_light",temp);
+            this.localize("BAKARA","road_control",temp);
+            this.localize("MEZEG_AVIR","weather",temp);
+            this.localize("PNE_KVISH","road_surface",temp);
+            this.localize("SUG_EZEM","road_object",temp);
+            this.localize("MERHAK_EZEM","object_distance",temp);
+            this.localize("LO_HAZA","didnt_cross",temp);
+            this.localize("OFEN_HAZIYA","cross_mode",temp);
+            this.localize("MEKOM_HAZIYA","cross_location",temp);
+            this.localize("KIVUN_HAZIYA","cross_direction",temp);
+
+            temp.find(".creation-date").text("תאריך: " +
+                moment(this.model.get("created")).format("LLLL"));
+            temp.find(".profile-image").attr("width", "50px");
+            temp.find(".profile-image").attr("src", "/static/img/logos/" + provider.logo);
+            temp.find(".profile-image").attr("title", provider.name);
+            temp.find(".profile-image-url").attr("href", provider.url);
+            temp.find(".added-by").html("מקור: <a href='" +
+                provider.url + "' target='blank'>" + provider.name + "</a>");
+
+            this.$el.html(temp.html());
+        }
     },
     getIcon : function() {
         return {
@@ -222,6 +237,8 @@ var MarkerView = Backbone.View.extend({
         app.closeInfoWindow();
         app.selectedMarker = this;
         var infoWindowOffset = this.markerIconType ? new google.maps.Size(0,-25) : new google.maps.Size(0,0);
+
+        this.populateMarkerInfo();
 
         if (this.marker_clicked) {
             app.infoWindow = new google.maps.InfoWindow({
