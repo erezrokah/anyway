@@ -1334,29 +1334,29 @@ $(function () {
                     accuracyText = "";
                 }
 
-                $("#filter-string").empty()
-                    .append("<span>מציג </span>")
-                    .append("<span><a onclick='showFilter(FILTER_MARKERS)'>" + this.total_accidents + "</a></span>")
-                    .append("<span> תאונות</span><br>")
-                    .append("<span>" + severityText + "</span>")
-                    .append("<span><a onclick='showFilter(FILTER_INFO)' style='color: #d81c32;'>" + fatal + "</a></span>")
-                    .append("<span><a onclick='showFilter(FILTER_INFO)' style='color: #ff9f1c;'>" + severe + "</a></span>")
-                    .append("<span><a onclick='showFilter(FILTER_INFO)' style='color: #ffd82b;'>" + light + "</a></span><br>")
-                    .append("<span> ו-</span>")
-                    .append("<span><a onclick='showFilter(FILTER_MARKERS)'>" + this.total_rsa + "</a></span>")
-                    .append("<span> אירועים</span>")
-                    .append("<span>" + accuracyText + "</span>")
-                    .append("<span><a onclick='showFilter(FILTER_INFO)'>" + accurate + "</a></span>")
-                    .append("<span><a onclick='showFilter(FILTER_INFO)'>" + approx + "</a></span><br>")
-                    .append("<span> בין התאריכים </span><br>")
-                    .append("<span><a onclick='showFilter(FILTER_DATE)'>"+
-                                moment(this.dateRanges[0]).format('LL') + " עד " +
-                                moment(this.dateRanges[1]).format('LL') +"</a></span><br>")
+                var html = [
+                    "<span>מציג </span>",
+                    "<span><a onclick='showFilter(FILTER_MARKERS)'>" + this.total_accidents + "</a></span>",
+                    "<span> תאונות</span><br>",
+                    "<span>" + severityText + "</span>",
+                    "<span><a onclick='showFilter(FILTER_INFO)' style='color: #d81c32;'>" + fatal + "</a></span>",
+                    "<span><a onclick='showFilter(FILTER_INFO)' style='color: #ff9f1c;'>" + severe + "</a></span>",
+                    "<span><a onclick='showFilter(FILTER_INFO)' style='color: #ffd82b;'>" + light + "</a></span><br>",
+                    "<span> ו-</span>",
+                    "<span><a onclick='showFilter(FILTER_MARKERS)'>" + this.total_rsa + "</a></span>",
+                    "<span> אירועים</span>",
+                    "<span>" + accuracyText + "</span>",
+                    "<span><a onclick='showFilter(FILTER_INFO)'>" + accurate + "</a></span>",
+                    "<span><a onclick='showFilter(FILTER_INFO)'>" + approx + "</a></span><br>",
+                    "<span> בין התאריכים </span><br>",
+                    "<span><a onclick='showFilter(FILTER_DATE)'>"+
+                            moment(this.dateRanges[0]).format('LL') + " עד " +
+                            moment(this.dateRanges[1]).format('LL') +"</a></span><br>"
+                ];
 
-                ;
+                $("#filter-string").empty().append(html.join(""));
             } else {
-                $("#filter-string").empty()
-                    .append("<p>התקרב על מנת לקבל נתוני סינון</p>");
+                $("#filter-string").empty().append("<p>התקרב על מנת לקבל נתוני סינון</p>");
             }
         },
         indicatingAvailabilityOfIconsDotsSwitch: function() {

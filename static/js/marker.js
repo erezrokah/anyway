@@ -96,7 +96,7 @@ var MarkerView = Backbone.View.extend({
         } else {
             var temp = $("<div/>");
             temp.html(templates.default);
-            
+
             temp.find(".title").text(this.marker.get("title"));
             temp.find(".id").text(fields.ACC_ID + ": " + this.marker.get("id"));
             temp.find(".provider_code").text(fields.PROVIDER_CODE + ": " + this.model.get("provider_code"));
