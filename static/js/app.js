@@ -100,10 +100,9 @@ $(function () {
             this.markers
                 .bind("reset", this.loadMarkers, this)
                 .bind("destroy", this.loadMarkers, this)
-                .bind("add", this.loadMarker, this)
                 .bind("remove", this.removeMarker, this)
-                .bind("request", this.startSpinner, this)
-                .bind("sync", this.stopSpinner, this)
+                .bind("request", this.onRequest, this)
+                .bind("sync", this.onSync, this)
                 .bind("change:currentModel", this.chooseMarker, this);
 
             this.clusters
@@ -755,13 +754,14 @@ $(function () {
                 }
             });
         },
-        startSpinner: function() {
+        onRequest: function() {
             this.spinner.spin(this.sidebar.$currentViewList[0]);
         },
-        stopSpinner: function() {
+        onSync: function(model) {
             if (this.spinner) {
                 this.spinner.stop();
             }
+            model.forEach(_.bind(this.loadMarker, this));
         },
         getMarkerIndex: function(model) {
             for (var i = 0; i < this.markerList.length; i++) {
